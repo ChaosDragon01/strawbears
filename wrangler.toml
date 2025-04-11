@@ -1,10 +1,7 @@
-# filepath: wrangler.toml
 name = "strawbears-worker"
 main = "worker.js"
 compatibility_date = "2025-04-10"
-
-[compatibility_flags]
-flags = ["python_workers"]
+compatibility_flags = ["python_workers"]
 
 [vars]
-PYTHON_WORKER = "bot.py" # worker name
+PYTHON_WORKER = "bot"
