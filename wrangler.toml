@@ -1,7 +1,10 @@
 # filepath: wrangler.toml
-name = "strawbears" # Replace with your worker's name
-main = "bot.py"        # Replace with your entry file if different
+name = "strawbears-worker"
+main = "worker.js"
 compatibility_date = "2025-04-10"
 
 [compatibility_flags]
 python_workers = true
+
+[vars]
+PYTHON_WORKER = "bot.py" # worker name
