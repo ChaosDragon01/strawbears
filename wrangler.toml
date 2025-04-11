@@ -4,7 +4,7 @@ main = "worker.js"
 compatibility_date = "2025-04-10"
 
 [compatibility_flags]
-python_workers = true
+flags = ["python_workers"]
 
 [vars]
 PYTHON_WORKER = "bot.py" # worker name
