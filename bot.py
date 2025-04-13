@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 #from dotenv import load_dotenv
 import os
@@ -180,6 +180,111 @@ async def generate_bracket(interaction: discord.Interaction, tournament_name: st
         embed.add_field(name=f"Round {i}", value=f"{match[0]} ⚔️ {match[1]}", inline=False)  # Changed emoji to ⚔️
 
     await interaction.response.send_message(embed=embed)
+
+# Slash command: Assign a role to a user
+@tree.command(name="assign_role", description="Assign a role to a user.")
+@app_commands.default_permissions(manage_roles=True)  # Only users with Manage Roles permission can use this
+async def assign_role(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
+    guild = interaction.guild
+    if role not in guild.roles:
+        await interaction.response.send_message(f"Role '{role.name}' does not exist in this server!", ephemeral=True)
+        return
+
+    await member.add_roles(role)
+    await interaction.response.send_message(f"Role '{role.name}' has been assigned to {member.mention}!")
+
+# Slash command: Remove a role from a user
+@tree.command(name="remove_role", description="Remove a role from a user.")
+@app_commands.default_permissions(manage_roles=True)  # Only users with Manage Roles permission can use this
+async def remove_role(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
+    guild = interaction.guild
+    if role not in guild.roles:
+        await interaction.response.send_message(f"Role '{role.name}' does not exist in this server!", ephemeral=True)
+        return
+
+    await member.remove_roles(role)
+    await interaction.response.send_message(f"Role '{role.name}' has been removed from {member.mention}!")
+
+# Slash command: Distribute roles based on criteria
+@tree.command(name="distribute_roles", description="Distribute roles to users based on criteria.")
+@app_commands.default_permissions(manage_roles=True)  # Only users with Manage Roles permission can use this
+async def distribute_roles(interaction: discord.Interaction, role: discord.Role, criterion: str):
+    guild = interaction.guild
+
+    if role not in guild.roles:
+        await interaction.response.send_message(f"Role '{role.name}' does not exist in this server!", ephemeral=True)
+        return
+
+    # Example criterion: Assign role to all users in a specific team
+    if criterion.startswith("team:"):
+        team_name = criterion.split("team:")[1].strip()
+        if team_name not in teams:
+            await interaction.response.send_message(f"Team '{team_name}' does not exist!", ephemeral=True)
+            return
+
+        members_to_assign = teams[team_name]
+        for member_id in members_to_assign:
+            member = guild.get_member(int(member_id))
+            if member:
+                await member.add_roles(role)
+
+        await interaction.response.send_message(f"Role '{role.name}' has been assigned to all members of team '{team_name}'!")
+
+    else:
+        await interaction.response.send_message(f"Unknown criterion: {criterion}", ephemeral=True)
+
+# Slash command: List roles of a user
+@tree.command(name="list_roles", description="List all roles of a user.")
+async def list_roles(interaction: discord.Interaction, member: discord.Member):
+    roles = [role.name for role in member.roles if role.name != "@everyone"]
+    roles_str = ", ".join(roles) if roles else "No roles assigned."
+    await interaction.response.send_message(f"{member.mention} has the following roles: {roles_str}")
+
+# Slash command: Set up automatic role distribution
+@tree.command(name="setup_auto_roles", description="Set up automatic role distribution based on criteria.")
+@app_commands.default_permissions(manage_roles=True)  # Only users with Manage Roles permission can use this
+async def setup_auto_roles(interaction: discord.Interaction, role: discord.Role, criterion: str):
+    global auto_role_criterion, auto_role
+    guild = interaction.guild
+
+    if role not in guild.roles:
+        await interaction.response.send_message(f"Role '{role.name}' does not exist in this server!", ephemeral=True)
+        return
+
+    auto_role_criterion = criterion
+    auto_role = role
+    auto_role_distributor.start()  # Start the background task
+    await interaction.response.send_message(f"Automatic role distribution set up for role '{role.name}' with criterion '{criterion}'!")
+
+# Background task: Automatically distribute roles
+@tasks.loop(minutes=10)  # Runs every 10 minutes
+async def auto_role_distributor():
+    guild = bot.guilds[0]  # Assuming the bot is in one guild
+    if not auto_role or not auto_role_criterion:
+        return
+
+    # Example criterion: Assign role to all users in a specific team
+    if auto_role_criterion.startswith("team:"):
+        team_name = auto_role_criterion.split("team:")[1].strip()
+        if team_name not in teams:
+            print(f"Team '{team_name}' does not exist! Skipping auto role distribution.")
+            return
+
+        members_to_assign = teams[team_name]
+        for member_id in members_to_assign:
+            member = guild.get_member(int(member_id))
+            if member and auto_role not in member.roles:
+                await member.add_roles(auto_role)
+                print(f"Assigned role '{auto_role.name}' to {member.display_name}.")
+
+# Stop the background task when the bot shuts down
+@bot.event
+async def on_disconnect():
+    auto_role_distributor.stop()
+
+# Initialize global variables for auto role distribution
+auto_role_criterion = None
+auto_role = None
 
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
