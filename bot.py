@@ -1,16 +1,18 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 import random
-import csv
+import json
 
-# Load environment variables from .env file
-load_dotenv()
+# Uncomment the following lines if you want to use a .env file for storing the bot token
+# from dotenv import load_dotenv
+#load_dotenv()  # Load environment variables from a .env file
+#BOT_TOKEN = os.getenv('DISCORD_TOKEN')  # Fetching from .env file
 
-# Get the bot token from the .env file
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+# Get the bot token from environment variables
+BOT_TOKEN = os.environ.get("DISCORD_TOKEN")  # Fetching from system environment variables
 
 # Create the bot instance
 intents = discord.Intents.all()
@@ -21,39 +23,32 @@ tree = bot.tree  # For slash commands
 teams = {}  # {team_name: [member1, member2, ...]}
 tournaments = {}  # {tournament_name: {"participants": [team1, team2, ...], "bracket": []}}
 
-# CSV file paths
-TEAMS_CSV = "teams.csv"
-TOURNAMENTS_CSV = "tournaments.csv"
+# JSON file paths
+TEAMS_JSON = "teams.json"
+TOURNAMENTS_JSON = "tournaments.json"
 
-# Load data from CSV files
+# Load data from JSON files
 def load_data():
     global teams, tournaments
     try:
-        with open(TEAMS_CSV, "r") as file:
-            reader = csv.reader(file)
-            teams = {row[0]: row[1:] for row in reader}
+        with open(TEAMS_JSON, "r") as file:
+            teams = json.load(file)
     except FileNotFoundError:
         teams = {}
 
     try:
-        with open(TOURNAMENTS_CSV, "r") as file:
-            reader = csv.reader(file)
-            tournaments = {row[0]: {"participants": row[1].split(";"), "bracket": []} for row in reader}
+        with open(TOURNAMENTS_JSON, "r") as file:
+            tournaments = json.load(file)
     except FileNotFoundError:
         tournaments = {}
 
-# Save data to CSV files
+# Save data to JSON files
 def save_data():
-    with open(TEAMS_CSV, "w", newline="") as file:
-        writer = csv.writer(file)
-        for team_name, members in teams.items():
-            writer.writerow([team_name] + members)
+    with open(TEAMS_JSON, "w") as file:
+        json.dump(teams, file, indent=4)
 
-    with open(TOURNAMENTS_CSV, "w", newline="") as file:
-        writer = csv.writer(file)
-        for tournament_name, data in tournaments.items():
-            participants = ";".join(data["participants"])
-            writer.writerow([tournament_name, participants])
+    with open(TOURNAMENTS_JSON, "w") as file:
+        json.dump(tournaments, file, indent=4)
 
 # Load data on startup
 load_data()
@@ -88,7 +83,7 @@ async def add_member(interaction: discord.Interaction, team_name: str, member: d
     if team_name not in teams:
         await interaction.response.send_message(f"Team '{team_name}' does not exist!")
     else:
-        teams[team_name].append(member)  # Store the full Member object
+        teams[team_name].append(str(member.id))  # Store member ID as a string
         save_data()
         await interaction.response.send_message(f"Member '{member.display_name}' has been added to team '{team_name}'!")
 
@@ -147,7 +142,7 @@ async def view_tournament(interaction: discord.Interaction, tournament_name: str
                 if team_name in teams:
                     members = teams[team_name]
                     if members:
-                        members_str = "\n".join([f"- {member.mention}" for member in members])  # Use member.mention for user tags
+                        members_str = "\n".join([f"- <@{member_id}>" for member_id in members])  # Mention users
                     else:
                         members_str = "No members yet."
                     embed.add_field(name=f"Team: {team_name}", value=members_str, inline=False)
@@ -186,8 +181,8 @@ async def generate_bracket(interaction: discord.Interaction, tournament_name: st
 
     await interaction.response.send_message(embed=embed)
 
-# Run the bot using the token from the .env file
+# Run the bot using the token from the environment variable
 if BOT_TOKEN:
     bot.run(BOT_TOKEN)
 else:
-    print("Error: BOT_TOKEN is not set in the .env file.")
+    print("Error: DISCORD_TOKEN is not set in the environment variables.")
