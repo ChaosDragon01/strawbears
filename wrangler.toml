@@ -1,4 +1,0 @@
-name = "strawbears-worker"
-main = "bot.py"
-compatibility_date = "2025-04-10"
-compatibility_flags = ["python_workers"]
