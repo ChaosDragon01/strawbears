@@ -95,7 +95,7 @@ async def view_team(interaction: discord.Interaction, team_name: str):
     else:
         members = teams[team_name]
         if members:
-            members_str = "\n".join([f"- {member}" for member in members])
+            members_str = "\n".join([f"- {interaction.guild.get_member(int(member)).display_name if interaction.guild.get_member(int(member)) else member}" for member in members])
         else:
             members_str = "No members yet."
         await interaction.response.send_message(f"**Team '{team_name}':**\n**Members:**\n{members_str}")
