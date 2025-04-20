@@ -293,27 +293,33 @@ auto_role = None
 
 @bot.event
 async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-    log_user_id = 485215456136003594
-    log_user = bot.get_user(log_user_id)
+    log_channel_id = 1363575519764938793  # Channel ID to send logs to
+    log_channel = bot.get_channel(log_channel_id)
 
-    if not log_user:
-        print(f"{get_timestamp()} Could not find user with ID {log_user_id} to send voice logs.")
+    if not log_channel:
+        print(f"{get_timestamp()} Could not find channel with ID {log_channel_id} to send voice logs.")
         return
 
+    # Determine the type of event (join, leave, or move)
     if before.channel is None and after.channel is not None:
+        # User joined a voice channel
         message = f"{get_timestamp()} 🔊 **{member.display_name}** joined voice channel **{after.channel.name}**."
     elif before.channel is not None and after.channel is None:
+        # User left a voice channel
         message = f"{get_timestamp()} 🔇 **{member.display_name}** left voice channel **{before.channel.name}**."
     elif before.channel is not None and after.channel is not None and before.channel != after.channel:
+        # User moved between voice channels
         message = f"{get_timestamp()} 🔄 **{member.display_name}** moved from **{before.channel.name}** to **{after.channel.name}**."
     else:
+        # No relevant change
         return
 
+    # Send the log message to the specified channel
     try:
-        await log_user.send(message)
-        print(f"{get_timestamp()} Sent voice log to {log_user.display_name}: {message}")
+        await log_channel.send(message)
+        print(f"{get_timestamp()} Sent voice log to channel {log_channel.name}: {message}")
     except discord.Forbidden:
-        print(f"{get_timestamp()} Could not send message to user {log_user_id}. They might have DMs disabled.")
+        print(f"{get_timestamp()} Could not send message to channel {log_channel_id}. The bot might lack permissions.")
     except Exception as e:
         print(f"{get_timestamp()} An error occurred while sending a voice log: {e}")
 
