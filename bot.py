@@ -303,13 +303,13 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     # Determine the type of event (join, leave, or move)
     if before.channel is None and after.channel is not None:
         # User joined a voice channel
-        message = f"{get_timestamp()} 🔊 **{member.display_name}** joined voice channel **{after.channel.name}**."
+        message = f"{get_timestamp()} 🔊 **{member}** joined voice channel {after.channel.mention}."
     elif before.channel is not None and after.channel is None:
         # User left a voice channel
-        message = f"{get_timestamp()} 🔇 **{member.display_name}** left voice channel **{before.channel.name}**."
+        message = f"{get_timestamp()} 🔇 **{member}** left voice channel {before.channel.mention}."
     elif before.channel is not None and after.channel is not None and before.channel != after.channel:
         # User moved between voice channels
-        message = f"{get_timestamp()} 🔄 **{member.display_name}** moved from **{before.channel.name}** to **{after.channel.name}**."
+        message = f"{get_timestamp()} 🔄 **{member}** moved from {before.channel.mention} to {after.channel.mention}."
     else:
         # No relevant change
         return
@@ -329,4 +329,3 @@ if BOT_TOKEN:
 else:
     print("Error: DISCORD_TOKEN is not set in the environment variables.")
 
-    
