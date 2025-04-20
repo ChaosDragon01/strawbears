@@ -303,13 +303,13 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     # Determine the type of event (join, leave, or move)
     if before.channel is None and after.channel is not None:
         # User joined a voice channel
-        message = f"{get_timestamp()} 🔊 **{member.name}#{member.discriminator}** joined voice channel {after.channel.mention}."
+        message = f"{get_timestamp()} 🔊 {member.mention} (**{member.name}#{member.discriminator}**) joined voice channel {after.channel.mention}."
     elif before.channel is not None and after.channel is None:
         # User left a voice channel
-        message = f"{get_timestamp()} 🔇 **{member.name}#{member.discriminator}** left voice channel {before.channel.mention}."
+        message = f"{get_timestamp()} 🔇 {member.mention} (**{member.name}#{member.discriminator}**) left voice channel {before.channel.mention}."
     elif before.channel is not None and after.channel is not None and before.channel != after.channel:
         # User moved between voice channels
-        message = f"{get_timestamp()} 🔄 **{member.name}#{member.discriminator}** moved from {before.channel.mention} to {after.channel.mention}."
+        message = f"{get_timestamp()} 🔄 {member.mention} (**{member.name}#{member.discriminator}**) moved from {before.channel.mention} to {after.channel.mention}."
     else:
         # No relevant change
         return
