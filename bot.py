@@ -328,3 +328,5 @@ if BOT_TOKEN:
     bot.run(BOT_TOKEN)
 else:
     print("Error: DISCORD_TOKEN is not set in the environment variables.")
+
+    
