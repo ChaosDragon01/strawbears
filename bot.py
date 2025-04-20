@@ -5,6 +5,11 @@ from discord import app_commands
 import os
 import random
 import json
+from datetime import datetime
+
+# Helper function to get the current timestamp
+def get_timestamp():
+    return datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
 
 # Uncomment the following lines if you want to use a .env file for storing the bot token
 # from dotenv import load_dotenv
@@ -285,6 +290,32 @@ async def on_disconnect():
 # Initialize global variables for auto role distribution
 auto_role_criterion = None
 auto_role = None
+
+@bot.event
+async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    log_user_id = 485215456136003594
+    log_user = bot.get_user(log_user_id)
+
+    if not log_user:
+        print(f"{get_timestamp()} Could not find user with ID {log_user_id} to send voice logs.")
+        return
+
+    if before.channel is None and after.channel is not None:
+        message = f"{get_timestamp()} 🔊 **{member.display_name}** joined voice channel **{after.channel.name}**."
+    elif before.channel is not None and after.channel is None:
+        message = f"{get_timestamp()} 🔇 **{member.display_name}** left voice channel **{before.channel.name}**."
+    elif before.channel is not None and after.channel is not None and before.channel != after.channel:
+        message = f"{get_timestamp()} 🔄 **{member.display_name}** moved from **{before.channel.name}** to **{after.channel.name}**."
+    else:
+        return
+
+    try:
+        await log_user.send(message)
+        print(f"{get_timestamp()} Sent voice log to {log_user.display_name}: {message}")
+    except discord.Forbidden:
+        print(f"{get_timestamp()} Could not send message to user {log_user_id}. They might have DMs disabled.")
+    except Exception as e:
+        print(f"{get_timestamp()} An error occurred while sending a voice log: {e}")
 
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
