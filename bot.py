@@ -16,6 +16,7 @@ def get_timestamp():
 #load_dotenv()  # Load environment variables from a .env file
 #BOT_TOKEN = os.getenv('DISCORD_TOKEN')  # Fetching from .env file
 
+
 # Get the bot token from environment variables
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN")  # Fetching from system environment variables
 
