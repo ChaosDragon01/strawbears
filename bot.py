@@ -324,6 +324,49 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     except Exception as e:
         print(f"{get_timestamp()} An error occurred while sending a voice log: {e}")
 
+def rot13(text):
+    result = []
+    for char in text:
+        if 'a' <= char <= 'z':
+            result.append(chr((ord(char) - ord('a') + 13) % 26 + ord('a')))
+        elif 'A' <= char <= 'Z':
+            result.append(chr((ord(char) - ord('A') + 13) % 26 + ord('A')))
+        else:
+            result.append(char)
+    return ''.join(result)
+
+def rot47(text):
+    result = []
+    for char in text:
+        ascii_val = ord(char)
+        if 33 <= ascii_val <= 126:
+            result.append(chr(33 + ((ascii_val - 33 + 47) % 94)))
+        else:
+            result.append(char)
+    return ''.join(result)
+
+def encrypt(text):
+    return rot47(rot13(text))
+
+def decrypt(text):
+    return rot13(rot47(text))
+
+@bot.event
+async def on_ready():
+    print(f'Bot is online as {bot.user}')
+
+@bot.command()
+async def encrypt(ctx, *, text: str):
+    encrypted_text = encrypt(text)
+    await ctx.send(f'🔐 **Encrypted Text:** `{encrypted_text}`')
+
+@bot.command()
+async def decrypt(ctx, *, text: str):
+    decrypted_text = decrypt(text)
+    await ctx.send(f'🔓 **Decrypted Text:** `{decrypted_text}`')
+
+
+
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
     bot.run(BOT_TOKEN)
