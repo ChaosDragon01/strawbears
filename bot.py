@@ -353,12 +353,7 @@ def rot13_then_rot47(text):
 def rot47_then_rot13(text):
     return rot13(rot47(text))
 
-# Event: Bot is ready
-@bot.event
-async def on_ready():
-    await tree.sync()  # Sync all slash commands with Discord
-    print(f"✅ Bot is online as {bot.user}")
-    print("✅ Slash commands have been synced.")
+
 
 # Slash command: /encrypt
 @tree.command(name="encrypt", description="Encrypt your message using ROT13 + ROT47")
