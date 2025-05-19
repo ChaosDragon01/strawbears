@@ -24,7 +24,9 @@ SPOTIFY_ACCESS_TOKEN = os.getenv("SPOTIFY_ACCESS_TOKEN")
 
 # Get the bot token from environment variables
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN")  # Fetching from system environment variables
+# Uncomment the following line if you want to use a .env file for storing the Spotify access token
 
+ 
 # Create the bot instance
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
