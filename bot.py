@@ -16,6 +16,12 @@ def get_timestamp():
 #load_dotenv()  # Load environment variables from a .env file
 #BOT_TOKEN = os.getenv('DISCORD_TOKEN')  # Fetching from .env file
 
+#spotify access token here 
+#SPOTIFY_ACCESS_TOKEN = os.environ.get("SPOTIFY_ACCESS_TOKEN")  # Replace with your token
+
+#@spotify access test here 
+SPOTIFY_ACCESS_TOKEN = os.getenv("SPOTIFY_ACCESS_TOKEN")
+
 # Get the bot token from environment variables
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN")  # Fetching from system environment variables
 
@@ -323,9 +329,58 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     except Exception as e:
         print(f"{get_timestamp()} An error occurred while sending a voice log: {e}")
 
+
+
+
+
+from spotipy import Spotify  # Import Spotify from the spotipy library
+
+# Initialize Spotify client with access token
+spotify = Spotify(auth=SPOTIFY_ACCESS_TOKEN)
+
+# Slash command: Get currently playing track
+@tree.command(name="spotify_now_playing", description="Get the currently playing track on Spotify.")
+async def spotify_now_playing(interaction: discord.Interaction):
+    try:
+        current_track = spotify.current_playback()
+        if current_track and current_track["is_playing"]:
+            track_name = current_track["item"]["name"]
+            artists = ", ".join(artist["name"] for artist in current_track["item"]["artists"])
+            track_url = current_track["item"]["external_urls"]["spotify"]
+
+            await interaction.response.send_message(
+                f"🎵 Now Playing: **{track_name}** by **{artists}**\n[Listen on Spotify]({track_url})"
+            )
+        else:
+            await interaction.response.send_message("No track is currently playing on Spotify.")
+    except Exception as e:
+        await interaction.response.send_message(f"An error occurred: {e}")
+
+# Slash command: Play a specific track
+@tree.command(name="spotify_play", description="Play a specific track on Spotify.")
+async def spotify_play(interaction: discord.Interaction, track_url: str):
+    try:
+        spotify.start_playback(uris=[track_url])
+        await interaction.response.send_message(f"🎵 Now playing: [Track]({track_url})")
+    except Exception as e:
+        await interaction.response.send_message(f"An error occurred: {e}")
+
+# Slash command: Pause playback
+@tree.command(name="spotify_pause", description="Pause Spotify playback.")
+async def spotify_pause(interaction: discord.Interaction):
+    try:
+        spotify.pause_playback()
+        await interaction.response.send_message("⏸️ Playback paused.")
+    except Exception as e:
+        await interaction.response.send_message(f"An error occurred: {e}")
+
+
+
+
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
     bot.run(BOT_TOKEN)
 else:
     print("Error: DISCORD_TOKEN is not set in the environment variables.")
+
 
