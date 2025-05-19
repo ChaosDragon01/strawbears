@@ -355,12 +355,12 @@ def decrypt(text):
 async def on_ready():
     print(f'Bot is online as {bot.user}')
 
-@bot.command()
+@tree.command()
 async def encrypt(ctx, *, text: str):
     encrypted_text = encrypt(text)
     await ctx.send(f'🔐 **Encrypted Text:** `{encrypted_text}`')
 
-@bot.command()
+@tree.command()
 async def decrypt(ctx, *, text: str):
     decrypted_text = decrypt(text)
     await ctx.send(f'🔓 **Decrypted Text:** `{decrypted_text}`')
