@@ -335,6 +335,7 @@ def rot13(text):
             result.append(char)
     return ''.join(result)
 
+# ROT47 implementation
 def rot47(text):
     result = []
     for char in text:
@@ -345,27 +346,31 @@ def rot47(text):
             result.append(char)
     return ''.join(result)
 
-def encrypt(text):
+# Combined encryption and decryption
+def rot13_then_rot47(text):
     return rot47(rot13(text))
 
-def decrypt(text):
+def rot47_then_rot13(text):
     return rot13(rot47(text))
 
+# Event: Bot is ready
 @bot.event
 async def on_ready():
-    print(f'Bot is online as {bot.user}')
+    await tree.sync()  # Sync all slash commands with Discord
+    print(f"✅ Bot is online as {bot.user}")
+    print("✅ Slash commands have been synced.")
 
-@tree.command()
-async def encrypt(ctx, *, text: str):
-    encrypted_text = encrypt(text)
-    await ctx.send(f'🔐 **Encrypted Text:** `{encrypted_text}`')
+# Slash command: /encrypt
+@tree.command(name="encrypt", description="Encrypt your message using ROT13 + ROT47")
+async def encrypt(interaction: discord.Interaction, text: str):
+    encrypted = rot13_then_rot47(text)
+    await interaction.response.send_message(f"🔐 **Encrypted Text:** `{encrypted}`")
 
-@tree.command()
-async def decrypt(ctx, *, text: str):
-    decrypted_text = decrypt(text)
-    await ctx.send(f'🔓 **Decrypted Text:** `{decrypted_text}`')
-
-
+# Slash command: /decrypt
+@tree.command(name="decrypt", description="Decrypt a ROT13+ROT47 encrypted message")
+async def decrypt(interaction: discord.Interaction, text: str):
+    decrypted = rot47_then_rot13(text)
+    await interaction.response.send_message(f"🔓 **Decrypted Text:** `{decrypted}`")
 
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
