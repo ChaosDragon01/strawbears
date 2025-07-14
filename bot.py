@@ -324,48 +324,9 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     except Exception as e:
         print(f"{get_timestamp()} An error occurred while sending a voice log: {e}")
 
-def rot13(text):
-    result = []
-    for char in text:
-        if 'a' <= char <= 'z':
-            result.append(chr((ord(char) - ord('a') + 13) % 26 + ord('a')))
-        elif 'A' <= char <= 'Z':
-            result.append(chr((ord(char) - ord('A') + 13) % 26 + ord('A')))
-        else:
-            result.append(char)
-    return ''.join(result)
-
-# ROT47 implementation
-def rot47(text):
-    result = []
-    for char in text:
-        ascii_val = ord(char)
-        if 33 <= ascii_val <= 126:
-            result.append(chr(33 + ((ascii_val - 33 + 47) % 94)))
-        else:
-            result.append(char)
-    return ''.join(result)
-
-# Combined encryption and decryption
-def rot13_then_rot47(text):
-    return rot47(rot13(text))
-
-def rot47_then_rot13(text):
-    return rot13(rot47(text))
+# Ensure the bot has the necessary permissions to send messages in the log channel
 
 
-
-# Slash command: /encrypt
-@tree.command(name="encrypt", description="Encrypt your message using ROT13 + ROT47")
-async def encrypt(interaction: discord.Interaction, text: str):
-    encrypted = rot13_then_rot47(text)
-    await interaction.response.send_message(f"🔐 **Encrypted Text:** `{encrypted}`")
-
-# Slash command: /decrypt
-@tree.command(name="decrypt", description="Decrypt a ROT13+ROT47 encrypted message")
-async def decrypt(interaction: discord.Interaction, text: str):
-    decrypted = rot47_then_rot13(text)
-    await interaction.response.send_message(f"🔓 **Decrypted Text:** `{decrypted}`")
 
 # Run the bot using the token from the environment variable
 if BOT_TOKEN:
